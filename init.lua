@@ -172,7 +172,7 @@ vim.keymap.set('n', '<leader>q', function()
   })
 end)
 
-vim.keymap.set('n', '<leader>e', function()
+vim.keymap.set('n', '<leader>E', function()
   vim.diagnostic.setqflist()
   vim.cmd('copen')
 end, { desc = 'Show all LSP diagnostics in quickfix' })
