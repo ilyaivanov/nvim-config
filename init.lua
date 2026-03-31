@@ -16,6 +16,9 @@ vim.o.splitright = true
 vim.o.splitbelow = true
 vim.o.scrolloff = 10
 
+vim.o.ignorecase = true
+vim.o.smartcase = true
+
 vim.opt.signcolumn = "yes:1"
 
 -- sync clipboard with the nvim
@@ -30,6 +33,10 @@ vim.keymap.set('n', '<leader>i', function()
   vim.cmd('source $MYVIMRC')
 end)
 
+vim.keymap.set('n', '<leader>I', function()
+  vim.cmd('e $MYVIMRC')
+end)
+
 vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
@@ -39,12 +46,17 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   callback = function() vim.hl.on_yank() end,
 })
 
+vim.keymap.set('n', '<M-J>', '<cmd>cnext<CR>');
+vim.keymap.set('n', '<M-K>', '<cmd>cprev<CR>');
 
 -- Theme
 vim.opt.background = "dark"
 
-vim.pack.add({ 'https://github.com/nyoom-engineering/oxocarbon.nvim' })
-vim.cmd.colorscheme "oxocarbon"
+vim.pack.add({ 'https://github.com/EdenEast/nightfox.nvim'})
+vim.cmd.colorscheme "carbonfox"
+
+-- vim.pack.add({ 'https://github.com/nyoom-engineering/oxocarbon.nvim' })
+-- vim.cmd.colorscheme "oxocarbon"
 
 -- vim.pack.add({ 'https://github.com/Mofiqul/vscode.nvim' })
 -- vim.cmd.colorscheme "vscode"
@@ -58,10 +70,10 @@ require('mini.statusline').setup({
   use_icons = false,
 })
 
-
 -- Telescope
 vim.pack.add({
   'https://github.com/nvim-telescope/telescope.nvim',
+  'https://github.com/nvim-telescope/telescope-file-browser.nvim',
 
   'https://github.com/nvim-lua/plenary.nvim',
 
@@ -74,8 +86,14 @@ require('telescope').setup({
   defaults = {
     layout_strategy = "horizontal",
     sorting_strategy = "ascending",
-  }
+  },
 })
+
+vim.keymap.set("n", "<space>fb", function()
+	require("telescope").extensions.file_browser.file_browser({selected_buffer = true})
+end)
+
+require("telescope").load_extension "file_browser"
 
 local builtin = require('telescope.builtin')
 
@@ -99,7 +117,28 @@ require('conform').setup({
 });
 
 vim.keymap.set('n', '<leader>f', function() 
-  require("conform").format({})
+  require("conform").format({
+    async = true,
+  })
+end, {})
+
+
+vim.keymap.set('n', '<leader>F', function()
+  vim.cmd("write")
+
+  local file = vim.api.nvim_buf_get_name(0)
+
+  vim.system({ "prettier", "-w", file }, { text = true }, function(obj)
+    if obj.code ~= 0 then
+      vim.schedule(function()
+        print("Prettier failed: " .. (obj.stderr or ""))
+      end)
+    else
+      vim.schedule(function()
+        vim.cmd("edit!") -- reload file after formatting
+      end)
+    end
+  end)
 end, {})
 
 
@@ -122,6 +161,21 @@ vim.diagnostic.config({
     focus = true,
   },
 })
+
+vim.keymap.set('n', '<leader>q', function()
+  vim.lsp.buf.references(nil, {
+    loclist = false,
+    on_list = function(options)
+      vim.fn.setqflist({}, ' ', options)
+      vim.cmd('copen')
+    end,
+  })
+end)
+
+vim.keymap.set('n', '<leader>e', function()
+  vim.diagnostic.setqflist()
+  vim.cmd('copen')
+end, { desc = 'Show all LSP diagnostics in quickfix' })
 
 vim.keymap.set('n', ']d', function()
   vim.diagnostic.goto_next()
