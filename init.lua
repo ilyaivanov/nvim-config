@@ -1,7 +1,6 @@
 -- Stuff missing: 
--- Autocomplettion
--- TODO manager plugin
--- File explorer 
+    -- Autocomplettion
+    -- File explorer 
 
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
@@ -27,6 +26,18 @@ vim.schedule(function() vim.o.clipboard = 'unnamedplus' end)
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 vim.keymap.set('n', '<leader>w', '<cmd>wa<CR>')
+vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
+--
+vim.keymap.set('n', '<leader>r', function()
+  -- https://stackoverflow.com/a/14425862
+  isWindows = package.config:sub(1,1) == "\\"
+
+  if isWindows then
+    vim.cmd('!cmd /c .\\build.bat')
+  else 
+    vim.print("linux")
+  end
+end)
 
 vim.keymap.set('n', '<leader>i', function()
   vim.cmd('wa') 
